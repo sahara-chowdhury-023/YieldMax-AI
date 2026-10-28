@@ -1,15 +1,3 @@
-
-from django.urls import path
-from .views import predictions_api, prediction_detail
-
-urlpatterns = [
-    path("predictions/", predictions_api, name="predictions-api"),
-    path(
-        "predictions/<int:pk>/",
-        prediction_detail,
-        name="prediction-detail",
-    ),
-]
 from django.urls import path
 from .views import (
     predictions_api,
@@ -23,6 +11,11 @@ urlpatterns = [
         "predictions/<int:pk>/",
         prediction_detail,
         name="prediction-detail",
+    ),
+    path(
+        "predictions/economics/calculate/",
+        economics_calculate,
+        name="predictions-economics-calculate",
     ),
     path(
         "economics/calculate/",

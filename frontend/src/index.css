@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  /* Color Palette - Figma Style Guide */
+  --color-bg: #090d16;
+  --color-surface: #111827;
+  --color-surface-card: #1f2937;
+  --color-surface-card-hover: #263345;
+  --color-surface-elevated: #283548;
+
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
+  --color-primary-active: #047857;
+  --color-primary-light: #ecfdf5;
+
+  --color-accent: #10b981;
+  --color-accent-hover: #059669;
+  --color-accent-alt: #38bdf8;
+  --color-accent-subtle: rgba(16, 185, 129, 0.1);
+
+  --color-scenario-normal: #10b981;
+  --color-scenario-low: #f59e0b;
+  --color-scenario-heavy: #3b82f6;
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #38bdf8;
+
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #9ca3af;
+  --color-text-muted: #6b7280;
+
+  --color-border: #374151;
+  --color-border-subtle: #1f2937;
+  --color-border-focus: #10b981;
+
+  /* Typography - Figma Style Guide */
+  --font-display: "Space Grotesk", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Border Radii - Figma Style Guide */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  --radius: 12px;
+
+  /* Shadows & Glows */
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --shadow-glow-emerald: 0 0 8px rgba(16, 185, 129, 0.6);
+  --shadow-glow-amber: 0 0 8px rgba(245, 158, 11, 0.6);
+  --shadow-glow-blue: 0 0 8px rgba(59, 130, 246, 0.6);
+}
+
+html, body, #root {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 0.15s ease-in-out;
+}
+
+a:hover {
+  color: var(--color-accent-alt);
+}
+
+button {
+  font-family: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+}
+
+/* Custom glowing badge animation */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.9);
+    opacity: 0.8;
+  }
+}
