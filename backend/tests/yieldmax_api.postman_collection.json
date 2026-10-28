@@ -1,0 +1,318 @@
+{
+  "info": {
+    "name": "YieldMax-AI API Test Suite",
+    "description": "Comprehensive Postman collection for YieldMax-AI REST APIs (CloudCamp BD 2026)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "health", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Health status is ok', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('ok');",
+              "    pm.expect(jsonData.service).to.include('YieldMax');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Farmer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Anisur Rahman\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/farmers/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "farmers", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Farmer has ID and name', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.be.a('number');",
+              "    pm.expect(jsonData.name).to.eql('Anisur Rahman');",
+              "    pm.collectionVariables.set('farmerId', jsonData.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Farm",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"farmer\": {{farmerId}},\n    \"area_ha\": 1.5,\n    \"district\": \"Mymensingh\",\n    \"upazila\": \"Trishal\",\n    \"land_type\": \"irrigated\",\n    \"crop_code\": \"boro_rice\",\n    \"planting_date\": \"2026-11-15\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/farms/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "farms", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Farm created with correct fields', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.be.a('number');",
+              "    pm.expect(jsonData.district).to.eql('Mymensingh');",
+              "    pm.expect(parseFloat(jsonData.area_ha)).to.eql(1.5);",
+              "    pm.collectionVariables.set('farmId', jsonData.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Farms",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/farms/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "farms", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Returns list of farms', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Farm Detail",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/farms/{{farmId}}/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "farms", "{{farmId}}", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Farm details are accurate', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(Number(pm.collectionVariables.get('farmId')));",
+              "    pm.expect(jsonData.district).to.eql('Mymensingh');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Prediction (3 Scenarios)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"farmer_name\": \"Mizanur Rahman\",\n    \"area_ha\": 2.0,\n    \"district\": \"Bogura\",\n    \"upazila\": \"Shibganj\",\n    \"land_type\": \"irrigated\",\n    \"crop_code\": \"boro_rice\",\n    \"planting_date\": \"2026-11-20\",\n    \"market_price_bdt_per_kg\": 28.0,\n    \"total_cost_bdt\": 95000.0\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/predictions/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "predictions", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Prediction returns 3 weather scenarios', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.currency).to.eql('BDT');",
+              "    pm.expect(jsonData.scenarios).to.be.an('array');",
+              "    pm.expect(jsonData.scenarios.length).to.eql(3);",
+              "    pm.collectionVariables.set('predictionId', jsonData.prediction_id);",
+              "});",
+              "pm.test('Scenarios contain normal, low_rain, and heavy_rain', function () {",
+              "    var jsonData = pm.response.json();",
+              "    var codes = jsonData.scenarios.map(function(s) { return s.scenario_code; });",
+              "    pm.expect(codes).to.include.members(['normal', 'low_rain', 'heavy_rain']);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Prediction Detail",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/predictions/{{predictionId}}/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "predictions", "{{predictionId}}", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Prediction detail matches', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.prediction.id).to.eql(pm.collectionVariables.get('predictionId'));",
+              "    pm.expect(jsonData.scenarios.length).to.eql(3);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Calculate Economics",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"area_ha\": 1.0,\n    \"yield_t_per_ha\": 5.0,\n    \"market_price_bdt_per_kg\": 28.0,\n    \"total_cost_bdt\": 75000.0\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/predictions/economics/calculate/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "predictions", "economics", "calculate", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Economics calculation is mathematically accurate', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.total_production_kg).to.eql(5000);",
+              "    pm.expect(jsonData.revenue_bdt).to.eql(140000);",
+              "    pm.expect(jsonData.total_cost_bdt).to.eql(75000);",
+              "    pm.expect(jsonData.net_profit_bdt).to.eql(65000);",
+              "    pm.expect(jsonData.currency).to.eql('BDT');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8001"
+    },
+    {
+      "key": "farmerId",
+      "value": "1"
+    },
+    {
+      "key": "farmId",
+      "value": "1"
+    },
+    {
+      "key": "predictionId",
+      "value": "1"
+    }
+  ]
+}
