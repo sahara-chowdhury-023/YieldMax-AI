@@ -1,7 +1,13 @@
 import axios from "axios";
 
+// Use VITE_API_BASE_URL if set (empty string = relative URLs via Nginx/Vite proxy, same origin -> no CORS).
+// Fall back to a relative (empty) base URL when the env var is absent so every API call
+// (including /api/predictions/economics/calculate/) goes through the same-origin /api proxy
+// instead of http://localhost:8000, which would be cross-origin from http://localhost.
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+  import.meta.env.VITE_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_API_BASE_URL
+    : "";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

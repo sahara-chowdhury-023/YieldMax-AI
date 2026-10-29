@@ -23,7 +23,7 @@ load_dotenv(BASE_DIR.parent / ".env")
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+1pe*olh+ez8d*&(_z-$&$cn0m(d)5_u993tuz4mz_gwg%d0($'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-+1pe*olh+ez8d*&(_z-$&$cn0m(d)5_u993tuz4mz_gwg%d0($')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -40,9 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+#3rd party
  'rest_framework',
 'corsheaders',
+#local
 'apps.farms',
 'apps.predictions',
 ]
@@ -139,10 +140,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = True
+# Explicitly allow the frontend origins. In production the frontend calls relative
+# /api paths (same origin via Nginx proxy), so no CORS preflight is needed; this
+# list covers local dev servers (Vite :5173) and direct backend access (:8000).
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

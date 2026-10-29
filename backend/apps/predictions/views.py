@@ -8,10 +8,16 @@ from apps.farms.models import Farmer, Farm
 from .models import Prediction, ScenarioResult
 from .serializers import PredictionSerializer, ScenarioResultSerializer
 from services.calculations import (
-    estimate_yield,
-    apply_scenario,
+    validate_crop_code,
     calculate_profit,
+    BASELINE_YIELD_T_PER_HA,
 )
+
+SCENARIO_MULTIPLIERS = {
+    "normal": 1.0,
+    "low_rain": 0.8,
+    "heavy_rain": 0.9,
+}
 
 
 @api_view(["POST"])
@@ -53,7 +59,8 @@ def predictions_api(request):
         if area_ha <= 0 or price < 0 or total_cost < 0:
             raise ValueError("Invalid numeric values")
 
-        base_yield = estimate_yield(data["crop_code"])
+        validate_crop_code(data["crop_code"])  # raises ValueError if unsupported
+        base_yield = BASELINE_YIELD_T_PER_HA
 
     except (ValueError, TypeError):
         return Response(
@@ -94,16 +101,14 @@ def predictions_api(request):
             ]
 
             for scenario_code in scenario_codes:
-                scenario_yield = apply_scenario(
-                    base_yield,
-                    scenario_code,
-                )
+                scenario_yield = round(base_yield * SCENARIO_MULTIPLIERS[scenario_code], 3)
 
                 result = calculate_profit(
-                    area_ha,
-                    scenario_yield,
-                    price,
-                    total_cost,
+                    area_ha=area_ha,
+                    yield_t_per_ha=scenario_yield,
+                    market_price_bdt_per_kg=price,
+                    total_cost_bdt=total_cost,
+                    crop_code=data["crop_code"],
                 )
 
                 ScenarioResult.objects.create(
@@ -187,6 +192,7 @@ def prediction_detail(request, pk):
         },
         status=status.HTTP_200_OK,
     )
+
 @api_view(["POST"])
 def economics_calculate(request):
     data = request.data
@@ -228,10 +234,10 @@ def economics_calculate(request):
             raise ValueError("Invalid numeric values")
 
         result = calculate_profit(
-            area_ha,
-            yield_t_per_ha,
-            price,
-            total_cost,
+            area_ha=area_ha,
+            yield_t_per_ha=yield_t_per_ha,
+            market_price_bdt_per_kg=price,
+            total_cost_bdt=total_cost,
         )
 
     except (ValueError, TypeError):

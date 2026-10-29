@@ -11,7 +11,7 @@ or:
 from datetime import date
 import unittest
 
-from service.calculation import (
+from services.calculations import (
     build_prediction_response,
     calculate_profit,
     calculate_scenarios,

@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-yieldmax_db}
+      POSTGRES_USER: ${DB_USER:-yieldmax_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-yieldmax_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-yieldmax_user} -d ${DB_NAME:-yieldmax_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-change-me}
+      DEBUG: ${DEBUG:-False}
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME:-yieldmax_db}
+      DB_USER: ${DB_USER:-yieldmax_user}
+      DB_PASSWORD: ${DB_PASSWORD:-yieldmax_pass}
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
