@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 'corsheaders',
 'apps.farms',
 'apps.predictions',
+'apps.advisory',
 ]
 
 MIDDLEWARE = [

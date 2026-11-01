@@ -7,11 +7,25 @@ from rest_framework import status
 from apps.farms.models import Farmer, Farm
 from .models import Prediction, ScenarioResult
 from .serializers import PredictionSerializer, ScenarioResultSerializer
+
 from services.calculations import (
     estimate_yield,
     apply_scenario,
     calculate_profit,
 )
+
+
+METHOD_VERSION = "yieldmax-prototype-v1"
+
+UNITS = {
+    "area": "hectare",
+    "yield": "tonne/hectare",
+    "production": "kg",
+    "price": "BDT/kg",
+    "cost": "BDT",
+    "revenue": "BDT",
+    "profit": "BDT",
+}
 
 
 @api_view(["POST"])
@@ -50,7 +64,7 @@ def predictions_api(request):
         price = float(data["market_price_bdt_per_kg"])
         total_cost = float(data["total_cost_bdt"])
 
-        if area_ha <= 0 or price < 0 or total_cost < 0:
+        if area_ha < 0.01 or price < 0 or total_cost < 0:
             raise ValueError("Invalid numeric values")
 
         base_yield = estimate_yield(data["crop_code"])
@@ -141,16 +155,26 @@ def predictions_api(request):
                 "upazila": farm.upazila,
             },
             "currency": "BDT",
+            "units": UNITS,
+            "method_version": METHOD_VERSION,
             "scenarios": [
                 {
                     "scenario_code": scenario.scenario_code,
-                    "yield_t_per_ha": float(scenario.yield_t_per_ha),
+                    "yield_t_per_ha": float(
+                        scenario.yield_t_per_ha
+                    ),
                     "total_production_kg": float(
                         scenario.total_production_kg
                     ),
-                    "revenue_bdt": float(scenario.revenue_bdt),
-                    "total_cost_bdt": float(scenario.total_cost_bdt),
-                    "net_profit_bdt": float(scenario.net_profit_bdt),
+                    "revenue_bdt": float(
+                        scenario.revenue_bdt
+                    ),
+                    "total_cost_bdt": float(
+                        scenario.total_cost_bdt
+                    ),
+                    "net_profit_bdt": float(
+                        scenario.net_profit_bdt
+                    ),
                 }
                 for scenario in scenarios
             ],
@@ -164,11 +188,16 @@ def predictions_api(request):
 def prediction_detail(request, pk):
     try:
         prediction = Prediction.objects.select_related(
-            "farm", "farm__farmer"
+            "farm",
+            "farm__farmer",
         ).get(pk=pk)
+
     except Prediction.DoesNotExist:
         return Response(
-            {"error": "Prediction not found"},
+            {
+                "success": False,
+                "error": "Prediction not found",
+            },
             status=status.HTTP_404_NOT_FOUND,
         )
 
@@ -178,15 +207,25 @@ def prediction_detail(request, pk):
 
     return Response(
         {
-            "prediction": PredictionSerializer(prediction).data,
+            "success": True,
+            "prediction": PredictionSerializer(
+                prediction
+            ).data,
             "farmer_name": prediction.farm.farmer.name,
             "crop_code": prediction.farm.crop_code,
+            "currency": "BDT",
+            "units": UNITS,
+            "method_version": METHOD_VERSION,
             "scenarios": ScenarioResultSerializer(
-                scenarios, many=True
+                scenarios,
+                many=True,
             ).data,
+            "is_prototype_estimate": True,
         },
         status=status.HTTP_200_OK,
     )
+
+
 @api_view(["POST"])
 def economics_calculate(request):
     data = request.data
@@ -220,7 +259,7 @@ def economics_calculate(request):
         total_cost = float(data["total_cost_bdt"])
 
         if (
-            area_ha <= 0
+            area_ha < 0.01
             or yield_t_per_ha < 0
             or price < 0
             or total_cost < 0
@@ -250,6 +289,8 @@ def economics_calculate(request):
             "area_ha": area_ha,
             "yield_t_per_ha": yield_t_per_ha,
             **result,
+            "units": UNITS,
+            "method_version": METHOD_VERSION,
             "is_prototype_estimate": True,
         },
         status=status.HTTP_200_OK,
